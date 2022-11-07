@@ -1,8 +1,22 @@
 import { badRequest, hashPassword, methodNotAllowed, ok, unauthorized } from 'next-basics';
 import { getUser, deleteUser, updateUser } from 'queries';
 import { useAuth } from 'lib/middleware';
+import { NextApiRequestQueryBody } from 'interface/nextApi';
+import { NextApiResponse } from 'next';
 
-export default async (req, res) => {
+export interface UserRequestBody {
+  username: string;
+  password: string;
+}
+
+export interface UserRequestQuery {
+  id: string;
+}
+
+export default async (
+  req: NextApiRequestQueryBody<UserRequestQuery, UserRequestBody>,
+  res: NextApiResponse,
+) => {
   await useAuth(req, res);
 
   const { isAdmin, userId } = req.auth;
@@ -27,7 +41,7 @@ export default async (req, res) => {
 
     const user = await getUser({ id });
 
-    const data = {};
+    const data: any = {};
 
     if (password) {
       data.password = hashPassword(password);

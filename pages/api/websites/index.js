@@ -7,21 +7,32 @@ export default async (req, res) => {
   await useCors(req, res);
   await useAuth(req, res);
 
-  const { id, isAdmin } = req.auth;
+  const { userId, isAdmin } = req.auth;
 
   if (req.method === 'GET') {
     const { include_all } = req.query;
 
-    const websites = isAdmin && include_all ? await getAllWebsites() : await getUserWebsites(id);
+    const websites =
+      isAdmin && include_all ? await getAllWebsites() : await getUserWebsites(userId);
 
     return ok(res, websites);
   }
 
   if (req.method === 'POST') {
-    const { name, domain, enableShareUrl } = req.body;
+    const { name, domain, enableShareUrl, user_id } = req.body;
+    let ownerId = userId;
+
+    if (isAdmin && user_id) {
+      ownerId = user_id;
+    }
 
     const shareId = enableShareUrl ? getRandomChars(8) : null;
-    const website = await createWebsite(id, { id: uuid(), name, domain, shareId });
+    const website = await createWebsite(ownerId, {
+      id: uuid(),
+      name,
+      domain,
+      shareId,
+    });
 
     return ok(res, website);
   }

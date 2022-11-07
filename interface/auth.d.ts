@@ -1,5 +1,5 @@
 export interface Auth {
-  id: number;
-  email?: string;
-  teams?: string[];
+  userId: string;
+  username: string;
+  isAdmin: boolean;
 }
