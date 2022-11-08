@@ -1,6 +1,7 @@
 import prisma from 'lib/prisma';
 import clickhouse from 'lib/clickhouse';
 import { runQuery, CLICKHOUSE, PRISMA } from 'lib/db';
+import { getWebsites } from 'queries';
 
 export function getEvents(...args) {
   return runQuery({
@@ -9,7 +10,7 @@ export function getEvents(...args) {
   });
 }
 
-function relationalQuery(websites, start_at) {
+async function relationalQuery(websites, start_at) {
   return prisma.client.event.findMany({
     where: {
       website: {
@@ -24,8 +25,10 @@ function relationalQuery(websites, start_at) {
   });
 }
 
-function clickhouseQuery(websites, start_at) {
-  const { rawQuery, getDateFormat, getCommaSeparatedStringFormat } = clickhouse;
+async function clickhouseQuery(websiteIds, start_at) {
+  const { rawQuery, getDateFormat, getWebsiteByRev } = clickhouse;
+
+  const websites = await getWebsites(websiteIds, true);
 
   return rawQuery(
     `select
@@ -37,11 +40,7 @@ function clickhouseQuery(websites, start_at) {
       event_name
     from event
     where event_name != ''
-      and ${
-        websites && websites.length > 0
-          ? `website_id in (${getCommaSeparatedStringFormat(websites)})`
-          : '0 = 0'
-      }
+    and ${websites && websites.length > 0 ? `${getWebsiteByRev(websites)}` : '0 = 0'}
       and created_at >= ${getDateFormat(start_at)}`,
   );
 }

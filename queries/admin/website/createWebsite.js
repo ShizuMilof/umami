@@ -11,13 +11,14 @@ export async function createWebsite(userId, data) {
           },
         },
         ...data,
+        revId: 0,
       },
     })
-    .then(async res => {
-      if (redis.enabled && res) {
-        await redis.set(`website:${res.id}`, 1);
+    .then(async data => {
+      if (redis.enabled && data) {
+        await redis.set(`website:${data.id}`, data);
       }
 
-      return res;
+      return data;
     });
 }

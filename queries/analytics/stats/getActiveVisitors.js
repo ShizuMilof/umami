@@ -2,6 +2,7 @@ import { subMinutes } from 'date-fns';
 import prisma from 'lib/prisma';
 import clickhouse from 'lib/clickhouse';
 import { runQuery, CLICKHOUSE, PRISMA } from 'lib/db';
+import { getWebsite } from 'queries';
 
 export async function getActiveVisitors(...args) {
   return runQuery({
@@ -27,13 +28,15 @@ async function relationalQuery(websiteId) {
 
 async function clickhouseQuery(websiteId) {
   const { rawQuery, getDateFormat } = clickhouse;
-  const params = [websiteId];
+  const { revId } = await getWebsite({ id: websiteId }, true);
+  const params = [websiteId, revId];
 
   return rawQuery(
     `select count(distinct session_id) x
     from event
     where website_id = $1
-    and created_at >= ${getDateFormat(subMinutes(new Date(), 5))}`,
+      and rev_id = $2
+      and created_at >= ${getDateFormat(subMinutes(new Date(), 5))}`,
     params,
   );
 }

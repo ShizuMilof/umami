@@ -8,6 +8,7 @@ export * from './admin/website/deleteWebsite';
 export * from './admin/website/getAllWebsites';
 export * from './admin/website/getUserWebsites';
 export * from './admin/website/getWebsite';
+export * from './admin/website/getWebsites';
 export * from './admin/website/resetWebsite';
 export * from './admin/website/updateWebsite';
 export * from './analytics/event/getEventMetrics';

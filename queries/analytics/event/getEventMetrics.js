@@ -1,6 +1,7 @@
 import prisma from 'lib/prisma';
 import clickhouse from 'lib/clickhouse';
 import { runQuery, CLICKHOUSE, PRISMA } from 'lib/db';
+import { getWebsite } from 'queries';
 
 export async function getEventMetrics(...args) {
   return runQuery({
@@ -46,7 +47,8 @@ async function clickhouseQuery(
   filters = {},
 ) {
   const { rawQuery, getDateQuery, getBetweenDates, getFilterQuery } = clickhouse;
-  const params = [websiteId];
+  const { revId } = await getWebsite({ id: websiteId }, true);
+  const params = [websiteId, revId];
 
   return rawQuery(
     `select
@@ -56,6 +58,7 @@ async function clickhouseQuery(
     from event
     where event_name != ''
       and website_id= $1
+      and rev_id = $2
       and ${getBetweenDates('created_at', start_at, end_at)}
       ${getFilterQuery('event', filters, params)}
     group by x, t
